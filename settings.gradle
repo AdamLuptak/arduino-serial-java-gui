@@ -1,0 +1,4 @@
+rootProject.name = 'arduino-usb'
+include 'java-arduino-fx-gui'
+include 'observable-serial-port'
+

@@ -1,0 +1,18 @@
+allprojects {
+    //Put instructions for all projects
+}
+subprojects {
+    apply plugin: "java"
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        testCompile "junit:junit:4+"
+        // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+        compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.0'
+        compile group: 'org.projectlombok', name: 'lombok', version: '1.16.18'
+    }
+
+}

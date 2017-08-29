@@ -1,0 +1,17 @@
+group 'com.adamluptakosice'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    maven { url "https://nexus.arcsmed.at/content/repositories/homer.core" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile group: 'org.rxtx', name: 'rxtx', version: '2.1.7'
+}
