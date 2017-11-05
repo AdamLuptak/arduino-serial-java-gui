@@ -1,4 +1,4 @@
-package serialportcomunikator;
+package arduinoclient;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;

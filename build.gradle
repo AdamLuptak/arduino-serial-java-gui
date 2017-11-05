@@ -13,6 +13,10 @@ subprojects {
         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
         compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.0'
         compile group: 'org.projectlombok', name: 'lombok', version: '1.16.18'
+        compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
+        compile group: 'com.google.guava', name: 'guava', version: '23.2-jre'
+        compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+
     }
 
 }

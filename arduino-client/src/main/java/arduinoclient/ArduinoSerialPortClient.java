@@ -1,44 +1,36 @@
-package serialportcomunikator;
+package arduinoclient;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.Enumeration;
-import java.util.Observable;
+
 
 /**
- * Created by root on 23.7.2017.
+ * Created by root on 14.10.2017.
  */
-public class ArduinoSerialPortProxy extends Observable implements ArduinoProxy<ArduinoRequestMessage, ArduinoResponseMessage>, SerialPortEventListener {
+public class ArduinoSerialPortClient implements ArduinoClient<ArduinoRequestMessage, ArduinoResponseMessage>, SerialPortEventListener {
+    private static Logger log = LoggerFactory.getLogger(ArduinoSerialPortClient.class);
 
     SerialPort serialPort;
     private ByteArrayOutputStream bout;
     private OutputStreamWriter writer;
     ObjectMapper mapper = new ObjectMapper();
-    private static final String PORT_NAMES[] = {
-            "/dev/tty.usbserial-A9007UX1", // Mac OS X
-            "/dev/ttyACM0", // Raspberry Pi
-            "/dev/ttyUSB0", // Linux
-            "COM3", // Windows
-    };
     /**
      * A BufferedReader which will be fed by a InputStreamReader
      * converting the bytes into characters
      * making the displayed results codepage independent
      */
     private BufferedReader input;
-    /**
-     * The output stream to the port
-     */
+
     private OutputStream output;
-    /**
-     * Milliseconds to block while waiting for port open
-     */
+
     private static final int TIME_OUT = 2000;
     /**
      * Default bits per second for COM port.
@@ -47,14 +39,17 @@ public class ArduinoSerialPortProxy extends Observable implements ArduinoProxy<A
 
     private ArduinoResponseMessage arduinoResponseMessage;
 
-    public ArduinoSerialPortProxy(SerialPort serialPort) {
-
+    public ArduinoSerialPortClient(SerialPort serialPort) {
+        initialize();
     }
 
-    public ArduinoSerialPortProxy() {
+    public ArduinoSerialPortClient() {
+        initialize();
     }
 
     public void initialize() {
+        SerialPortProperties propertyLoader = SerialPortProperties.createPropertyLoader("");
+
 
         CommPortIdentifier portId = null;
         Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
@@ -62,7 +57,7 @@ public class ArduinoSerialPortProxy extends Observable implements ArduinoProxy<A
         //First, Find an instance of serial port as set in PORT_NAMES.
         while (portEnum.hasMoreElements()) {
             CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
-            for (String portName : PORT_NAMES) {
+            for (String portName : propertyLoader.getPortNameList()) {
                 if (currPortId.getName().equals(portName)) {
                     portId = currPortId;
                     break;
@@ -112,21 +107,19 @@ public class ArduinoSerialPortProxy extends Observable implements ArduinoProxy<A
         }
     }
 
+    @Override
     public ArduinoResponseMessage getData() {
         return arduinoResponseMessage;
     }
 
     public void setData(ArduinoResponseMessage arduinoResponseMessage) {
         this.arduinoResponseMessage = arduinoResponseMessage;
-        setChanged();
-
     }
-
 
     @Override
     public void serialEvent(SerialPortEvent serialPortEvent) {
         if (serialPortEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
-            try {
+            try{
                 String inputLine = input.readLine();
                 arduinoResponseMessage = mapper.readValue(inputLine, ArduinoResponseMessage.class);
                 System.out.println(arduinoResponseMessage);
@@ -134,13 +127,6 @@ public class ArduinoSerialPortProxy extends Observable implements ArduinoProxy<A
                 System.err.println(e.toString());
             }
         }
-        setChanged();
-        notifyObservers();
-    }
-
-    @Override
-    public ArduinoResponseMessage getData(ArduinoRequestMessage arduinoRequestMessage) {
-        return null;
     }
 
     @Override

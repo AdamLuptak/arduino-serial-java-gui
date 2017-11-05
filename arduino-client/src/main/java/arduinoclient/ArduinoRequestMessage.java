@@ -1,4 +1,4 @@
-package serialportcomunikator;
+package arduinoclient;
 
 import lombok.Data;
 

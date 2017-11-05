@@ -1,4 +1,5 @@
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -6,19 +7,16 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
-import serialportcomunikator.ArduinoProxy;
-import serialportcomunikator.ArduinoResponseMessage;
-import serialportcomunikator.ArduinoSerialPortProxy;
+import arduinoclient.ArduinoClient;
+import arduinoclient.ArduinoRequestMessage;
+import arduinoclient.ArduinoResponseMessage;
+import arduinoclient.ArduinoObservableSerialPortClient;
 
 import javax.swing.*;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 
 
-public class Controller implements Observer {
+public class Controller {
 
     @FXML
     public ToggleButton startButton;
@@ -28,25 +26,33 @@ public class Controller implements Observer {
     Timer timer;
     ObservableList<ArduinoResponseMessage> allData = FXCollections.observableArrayList();
 
+    private ArduinoClient<ArduinoRequestMessage,ArduinoResponseMessage> arduinoClient;
+
+
     @FXML
     public void initialize() {
         System.out.println("Initialize controller");
-        arduinoProxy = new ArduinoSerialPortProxy();
-        arduinoProxy.initialize();
-        arduinoProxy.addObserver(this);
+        arduinoClient = new ArduinoObservableSerialPortClient();
         temperatureTableView.setItems(allData);
-        timer = new Timer(1000, timerCallBack);
-        temp1Column.setCellValueFactory(new PropertyValueFactory<ArduinoResponseMessage,String>("temp1"));
+        allData.addListener(new ListChangeListener<ArduinoResponseMessage>() {
+                                @Override
+                                public void onChanged(Change<? extends ArduinoResponseMessage> c) {
 
+                                        temperatureTableView.scrollTo(allData.size());
+                                }
+                            }
+
+        );
+        timer = new Timer(1000, updateMeasuredData);
+        temp1Column.setCellValueFactory(new PropertyValueFactory<ArduinoResponseMessage, String>(temp1Column.getText()));
     }
 
-    private ActionListener timerCallBack = t -> {
+    private ActionListener updateMeasuredData = t -> {
         System.out.println("Updating values on front end");
         System.out.println(arduinoResponseMessage);
+        arduinoResponseMessage = arduinoClient.getData();
         allData.add(arduinoResponseMessage);
     };
-
-    private ArduinoSerialPortProxy arduinoProxy;
 
     @FXML
     public void startButtonToggle(ActionEvent event) {
@@ -55,13 +61,6 @@ public class Controller implements Observer {
         } else {
             timer.stop();
         }
-    }
-
-    @Override
-    public void update(Observable o, Object arg) {
-        System.out.println("Running background updating value");
-        ArduinoSerialPortProxy arduinoSerialPortProxy = (ArduinoSerialPortProxy) o;
-        arduinoResponseMessage = arduinoSerialPortProxy.getData();
     }
 
 }

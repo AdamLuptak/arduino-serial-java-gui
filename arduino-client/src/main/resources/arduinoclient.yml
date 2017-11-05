@@ -1,0 +1,5 @@
+- portNames:
+  - /dev/tty.usbserial-A9007UX1
+  - /dev/ttyACM0
+  - /dev/ttyUSB0
+  - COM3
